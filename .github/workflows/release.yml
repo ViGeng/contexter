@@ -35,7 +35,7 @@ jobs:
             CODE_SIGN_IDENTITY= \
             DEVELOPMENT_TEAM= \
             PROVISIONING_PROFILE_SPECIFIER= \
-            MACOSX_DEPLOYMENT_TARGET=15.5 \
+            MACOSX_DEPLOYMENT_TARGET=14.0 \
             BUILD_DIR=$PWD/build \
             build
 
