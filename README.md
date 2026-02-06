@@ -27,6 +27,19 @@ brew install --cask contexter
 
 Download the latest `.zip` from [Releases](https://github.com/ViGeng/contexter/releases), extract, and drag `contexter.app` to your Applications folder.
 
+## Troubleshooting
+
+### "App is damaged and can't be opened"
+
+Since this app is not signed with an Apple Developer ID, macOS may block it. To fix this:
+
+1. Open Terminal
+2. Run the following command:
+   ```bash
+   xattr -cr /Applications/contexter.app
+   ```
+
+
 ## Usage
 
 1. Launch **Contexter**
