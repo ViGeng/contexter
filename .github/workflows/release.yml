@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-release:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      sha256: ${{ steps.sha.outputs.sha256 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Version
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build App
+        run: |
+          xcodebuild \
+            -project contexter.xcodeproj \
+            -scheme contexter \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            BUILD_DIR=$PWD/build \
+            build
+
+      - name: Create Zip
+        run: |
+          APP_PATH="build/Release/contexter.app"
+          ZIP_NAME="contexter-${{ steps.version.outputs.version }}.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_NAME"
+
+      - name: Compute SHA256
+        id: sha
+        run: |
+          ZIP_NAME="contexter-${{ steps.version.outputs.version }}.zip"
+          SHA=$(shasum -a 256 "$ZIP_NAME" | awk '{print $1}')
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: contexter-${{ steps.version.outputs.version }}.zip
+
+  publish-homebrew:
+    needs: build-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Tap
+        uses: actions/checkout@v4
+        with:
+          repository: ViGeng/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Update Cask
+        run: |
+          VERSION="${{ needs.build-release.outputs.version }}"
+          SHA256="${{ needs.build-release.outputs.sha256 }}"
+          URL="https://github.com/ViGeng/contexter/releases/download/v${VERSION}/contexter-${VERSION}.zip"
+
+          mkdir -p homebrew-tap/Casks
+
+          cat > homebrew-tap/Casks/contexter.rb <<EOF
+          cask "contexter" do
+            version "${VERSION}"
+            sha256 "${SHA256}"
+
+            url "${URL}"
+            name "Contexter"
+            desc "Context manager for project files, notes, and links"
+            homepage "https://github.com/ViGeng/contexter"
+
+            app "contexter.app"
+          end
+          EOF
+
+      - name: Commit and Push
+        run: |
+          cd homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/contexter.rb
+          git commit -m "Update contexter to v${{ needs.build-release.outputs.version }}" || echo "No changes to commit"
+          git push
