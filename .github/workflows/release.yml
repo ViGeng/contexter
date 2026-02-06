@@ -30,6 +30,9 @@ jobs:
             -scheme contexter \
             -configuration Release \
             -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            MACOSX_DEPLOYMENT_TARGET=15.5 \
             BUILD_DIR=$PWD/build \
             build
 
