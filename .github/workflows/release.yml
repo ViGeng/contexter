@@ -78,19 +78,19 @@ jobs:
 
           mkdir -p homebrew-tap/Casks
 
-          cat > homebrew-tap/Casks/contexter.rb <<EOF
-          cask "contexter" do
-            version "${VERSION}"
-            sha256 "${SHA256}"
+          cat > homebrew-tap/Casks/contexter.rb << CASKEOF
+cask "contexter" do
+  version "${VERSION}"
+  sha256 "${SHA256}"
 
-            url "${URL}"
-            name "Contexter"
-            desc "Context manager for project files, notes, and links"
-            homepage "https://github.com/ViGeng/contexter"
+  url "${URL}"
+  name "Contexter"
+  desc "Context manager for project files, notes, and links"
+  homepage "https://github.com/ViGeng/contexter"
 
-            app "contexter.app"
-          end
-          EOF
+  app "contexter.app"
+end
+CASKEOF
 
       - name: Commit and Push
         run: |
