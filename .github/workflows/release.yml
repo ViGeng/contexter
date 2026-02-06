@@ -25,13 +25,16 @@ jobs:
 
       - name: Build App
         run: |
-          xcodebuild \
-            -project contexter.xcodeproj \
+          xcodebuild -project contexter.xcodeproj \
             -scheme contexter \
             -configuration Release \
             -destination 'platform=macOS' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY= \
+            DEVELOPMENT_TEAM= \
+            PROVISIONING_PROFILE_SPECIFIER= \
             MACOSX_DEPLOYMENT_TARGET=15.5 \
             BUILD_DIR=$PWD/build \
             build
